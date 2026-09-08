@@ -1,0 +1,1048 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Broadcaster Console & Test Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: #151c2c;
+            --border-color: #243049;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-primary: #3b82f6;
+            --accent-primary-hover: #2563eb;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge.offline {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--accent-danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-badge.live {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.7;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.7;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"] {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            flex-grow: 1;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-primary-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-danger);
+            color: #fff;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .preview-box {
+            position: relative;
+            aspect-ratio: 16/9;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .preview-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        .console-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .console-log {
+            background-color: #05070c;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            overflow-y: auto;
+            flex-grow: 1;
+            max-height: 400px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .log-entry {
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            margin-right: 0.5rem;
+        }
+
+        .log-error {
+            color: var(--accent-danger);
+        }
+
+        .log-success {
+            color: var(--accent-success);
+        }
+
+        .log-warning {
+            color: var(--accent-warning);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            height: 8px;
+            border-radius: 9999px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .viewer-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .viewer-item {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viewer-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-success);
+            border-radius: 50%;
+        }
+
+        .test-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background-color: rgba(59, 130, 246, 0.05);
+            border: 1px dashed var(--accent-primary);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .test-links a {
+            color: #60a5fa;
+            text-decoration: none;
+            word-break: break-all;
+            font-weight: 500;
+        }
+
+        .test-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Broadcaster Console</h1>
+        <p class="subtitle">Simulate screen sharing, WebRTC broadcasting, and upload recording flow</p>
+    </header>
+
+    <div class="container">
+        <!-- Controls & Preview -->
+        <div class="card">
+            <div class="card-title">
+                <span>Broadcaster Settings</span>
+                <span id="statusBadge" class="status-badge offline">Offline</span>
+            </div>
+
+            <div class="input-group">
+                <label for="usernameInput">User ID / Username</label>
+                <input type="text" id="usernameInput" placeholder="e.g. user-01" value="user-01" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="input-group">
+                    <label for="quizSelect">Select Quiz</label>
+                    <select id="quizSelect"
+                        style="background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: inherit; font-size: 1rem; outline: none;">
+                        <option value="math-101">Mathematics (math-101)</option>
+                        <option value="science-202">General Science (science-202)</option>
+                        <option value="geography-303">World Geography (geography-303)</option>
+                        <option value="custom">-- Custom Quiz --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="questionSelect">Select Question</label>
+                    <select id="questionSelect"
+                        style="background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: inherit; font-size: 1rem; outline: none;">
+                        <!-- populated via javascript -->
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; display: none;"
+                id="customInputsGroup">
+                <div class="input-group">
+                    <label for="quizIdInput">Quiz ID</label>
+                    <input type="text" id="quizIdInput" placeholder="e.g. quiz-101" value="math-101" />
+                </div>
+                <div class="input-group">
+                    <label for="questionIdInput">Question ID / Number</label>
+                    <input type="text" id="questionIdInput" placeholder="e.g. q1" value="q1" />
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="startBtn" class="btn btn-primary">
+                    Start Quiz & Share Screen
+                </button>
+                <button id="stopBtn" class="btn btn-danger" disabled>
+                    End Quiz & Stop Share
+                </button>
+            </div>
+
+            <div id="recordingStatusPanel"
+                style="border: 1px dashed var(--border-color); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; background-color: rgba(16, 185, 129, 0.02);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="font-size: 0.95rem; font-weight: 600;">Active Quiz Recording</h4>
+                    <span id="recordingIndicator"
+                        style="display: none; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--accent-success); font-weight: 600;">
+                        <span
+                            style="width: 8px; height: 8px; background-color: var(--accent-success); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
+                        RECORDING ACTIVE
+                    </span>
+                </div>
+                <div style="font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <div><span style="color: var(--text-secondary);">Currently Recording:</span> <strong
+                            id="activeRecordingText" style="color: var(--accent-success);">None (Quiz not
+                            started)</strong></div>
+                </div>
+                <div class="btn-row">
+                    <button id="nextQuestionBtn" class="btn btn-primary"
+                        style="background-color: var(--accent-primary);" disabled>
+                        Next Question &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-box">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <div id="previewPlaceholder" class="preview-placeholder">
+                    No active stream. Start broadcasting to capture screen.
+                </div>
+            </div>
+
+            <div id="testLinksCard" class="test-links" style="display: none;">
+                <strong>Watcher Link:</strong>
+                <a id="watcherLink" href="#" target="_blank">Click here to open Viewer Page</a>
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">Open this link in a new browser tab or
+                    on another machine to test live WebRTC video stream.</span>
+            </div>
+        </div>
+
+        <!-- System Logs & Viewer State -->
+        <div class="card console-card">
+            <div class="card-title">
+                <span>Signaling & Activity Console</span>
+            </div>
+
+            <div id="conversionContainer" style="display: none; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                    <span id="uploadStatusText">Uploading recorded stream...</span>
+                    <span id="uploadPercent">0%</span>
+                </div>
+                <div class="progress-bar-container" style="display: block;">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-secondary);">Connected Watchers:
+                </h4>
+                <ul id="viewerList" class="viewer-list">
+                    <li id="noViewersText" style="font-size: 0.9rem; color: var(--text-secondary); font-style: italic;">
+                        No viewers currently connected.</li>
+                </ul>
+            </div>
+
+            <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h4 style="font-size: 0.95rem; color: var(--text-secondary);">Event Logs:</h4>
+                    <button id="clearLogsBtn"
+                        style="background: none; border: none; color: var(--accent-primary); cursor: pointer; font-size: 0.8rem; font-family: inherit;">Clear</button>
+                </div>
+                <div id="consoleLog" class="console-log"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // CONFIGURATION: Set this to your deployed Render URL if hosting this file separately
+        // (e.g. 'https://your-app.onrender.com'). If hosted together with the Node server,
+        // it will dynamically resolve to the current domain automatically.
+        const BASE_URL = 'http://localhost:2025'; // Changed for local testing
+
+        const socket = io(BASE_URL);
+
+        // UI elements
+        const usernameInput = document.getElementById('usernameInput');
+        const quizIdInput = document.getElementById('quizIdInput');
+        const questionIdInput = document.getElementById('questionIdInput');
+        const quizSelect = document.getElementById('quizSelect');
+        const questionSelect = document.getElementById('questionSelect');
+        const customInputsGroup = document.getElementById('customInputsGroup');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        const activeRecordingText = document.getElementById('activeRecordingText');
+        const statusBadge = document.getElementById('statusBadge');
+        const localVideo = document.getElementById('localVideo');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const testLinksCard = document.getElementById('testLinksCard');
+        const watcherLink = document.getElementById('watcherLink');
+        const viewerList = document.getElementById('viewerList');
+        const noViewersText = document.getElementById('noViewersText');
+        const consoleLog = document.getElementById('consoleLog');
+        const clearLogsBtn = document.getElementById('clearLogsBtn');
+        const conversionContainer = document.getElementById('conversionContainer');
+        const uploadStatusText = document.getElementById('uploadStatusText');
+        const uploadPercent = document.getElementById('uploadPercent');
+        const progressBar = document.getElementById('progressBar');
+
+        // Predefined quiz & question data
+        const QUIZ_DATA = {
+            "math-101": {
+                name: "Mathematics Quiz (math-101)",
+                questions: [
+                    { id: "q1", name: "Q1: Geometry & Shapes" },
+                    { id: "q2", name: "Q2: Linear Algebra" },
+                    { id: "q3", name: "Q3: Calculus Derivative" }
+                ]
+            },
+            "science-202": {
+                name: "General Science Quiz (science-202)",
+                questions: [
+                    { id: "q1", name: "Q1: Newton's Laws" },
+                    { id: "q2", name: "Q2: Organic Chemistry" },
+                    { id: "q3", name: "Q3: Cell Structure" }
+                ]
+            },
+            "geography-303": {
+                name: "World Geography Quiz (geography-303)",
+                questions: [
+                    { id: "q1", name: "Q1: Ocean Currents" },
+                    { id: "q2", name: "Q2: Mountain Ranges" },
+                    { id: "q3", name: "Q3: Capital Cities" }
+                ]
+            }
+        };
+
+        function populateQuestions() {
+            const selectedQuiz = quizSelect.value;
+            questionSelect.innerHTML = '';
+
+            if (selectedQuiz === 'custom') {
+                customInputsGroup.style.display = 'grid';
+                quizIdInput.value = '';
+                questionIdInput.value = '';
+                const opt = document.createElement('option');
+                opt.value = 'custom';
+                opt.textContent = '-- Enter Custom Values Below --';
+                questionSelect.appendChild(opt);
+            } else {
+                customInputsGroup.style.display = 'none';
+                quizIdInput.value = selectedQuiz;
+
+                const data = QUIZ_DATA[selectedQuiz];
+                if (data && data.questions) {
+                    data.questions.forEach((q, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = q.id;
+                        opt.textContent = q.name;
+                        questionSelect.appendChild(opt);
+                        if (idx === 0) {
+                            questionIdInput.value = q.id;
+                        }
+                    });
+                }
+            }
+        }
+
+        quizSelect.addEventListener('change', populateQuestions);
+        questionSelect.addEventListener('change', () => {
+            if (quizSelect.value !== 'custom') {
+                questionIdInput.value = questionSelect.value;
+            }
+        });
+
+        // Initialize quiz options
+        populateQuestions();
+
+        // State variables
+        let localStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let peerConnections = new Map(); // watcherId -> RTCPeerConnection
+        let isBroadcasting = false;
+        let isRecordingQuestion = false;
+
+        // Logging utility
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type ? 'log-' + type : ''}`;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'log-time';
+            timeSpan.textContent = new Date().toLocaleTimeString();
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = message;
+
+            entry.appendChild(timeSpan);
+            entry.appendChild(textSpan);
+
+            consoleLog.appendChild(entry);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        clearLogsBtn.addEventListener('click', () => {
+            consoleLog.innerHTML = '';
+        });
+
+        // Start broadcasting & Start Quiz
+        startBtn.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            if (!username) {
+                alert('Please enter a username room ID first.');
+                return;
+            }
+
+            try {
+                log('Requesting screen capture stream...');
+                localStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: "always" },
+                    audio: true
+                });
+
+                localVideo.srcObject = localStream;
+                previewPlaceholder.style.display = 'none';
+
+                // Track video track constraints or set standard contentHint
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack && 'contentHint' in videoTrack) {
+                    videoTrack.contentHint = 'detail';
+                }
+
+                isBroadcasting = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                nextQuestionBtn.disabled = false;
+                usernameInput.disabled = true;
+                quizIdInput.disabled = true;
+                quizSelect.disabled = true;
+
+                // Update UI state
+                statusBadge.className = 'status-badge live';
+                statusBadge.textContent = 'Live';
+
+                // Setup watcher links
+                const watcherUrl = `${BASE_URL}/view/${encodeURIComponent(username)}.html`;
+                watcherLink.href = watcherUrl;
+                watcherLink.textContent = watcherUrl;
+                testLinksCard.style.display = 'flex';
+
+                // Announce to server
+                log(`Announcing broadcast room for username: "${username}"`);
+                socket.emit('broadcaster', { username });
+
+                // Auto-start recording for the first question
+                const initialQuestionId = questionIdInput.value.trim() || 'q1';
+                startQuestionRecording(initialQuestionId);
+
+                // Listen for end of screen sharing from browser UI directly (e.g. Stop Sharing button)
+                videoTrack.onended = () => {
+                    log('Screen sharing stopped via browser interface');
+                    stopBroadcast();
+                };
+
+            } catch (err) {
+                log(`Failed to capture screen: ${err.message}`, 'error');
+                console.error(err);
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            stopBroadcast();
+        });
+
+        function stopBroadcast() {
+            if (!isBroadcasting) return;
+            log('Ending quiz and stopping broadcast...');
+
+            if (isRecordingQuestion) {
+                const questionId = questionIdInput.value.trim();
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    log(`Finalizing and saving recording for last question: "${questionId}"...`);
+                }
+                isRecordingQuestion = false;
+            }
+
+            // Stop media stream tracks
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            localVideo.srcObject = null;
+            previewPlaceholder.style.display = 'flex';
+
+            // Inform server
+            socket.emit('stop-broadcast');
+
+            // Close all viewer connections
+            peerConnections.forEach((pc, id) => {
+                pc.close();
+                removeViewerFromUI(id);
+            });
+            peerConnections.clear();
+
+            isBroadcasting = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            nextQuestionBtn.disabled = true;
+            usernameInput.disabled = false;
+            quizIdInput.disabled = false;
+            quizSelect.disabled = false;
+
+            statusBadge.className = 'status-badge offline';
+            statusBadge.textContent = 'Offline';
+            testLinksCard.style.display = 'none';
+            recordingIndicator.style.display = 'none';
+            activeRecordingText.textContent = 'None (Quiz not started)';
+            log('Quiz ended.');
+        }
+
+        // WebRTC Signaling Handlers
+        socket.on('watcher', async (watcherId) => {
+            log(`New watcher requested connection: ${watcherId}`, 'success');
+
+            if (!localStream) {
+                log('No stream available to offer watcher', 'warning');
+                return;
+            }
+
+            // Create peer connection for this watcher
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19002' }
+                ]
+            });
+
+            peerConnections.set(watcherId, pc);
+            addViewerToUI(watcherId);
+
+            // Add local tracks to peer connection
+            localStream.getTracks().forEach(track => {
+                pc.addTrack(track, localStream);
+            });
+
+            pc.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('candidate', watcherId, event.candidate);
+                }
+            };
+
+            try {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                log(`Sending RTC offer to watcher: ${watcherId}`);
+                socket.emit('offer', watcherId, pc.localDescription);
+            } catch (err) {
+                log(`Failed to create or send RTC offer: ${err.message}`, 'error');
+            }
+        });
+
+        socket.on('answer', async (watcherId, description) => {
+            log(`Received RTC answer from watcher: ${watcherId}`);
+            const pc = peerConnections.get(watcherId);
+            if (pc) {
+                try {
+                    await pc.setRemoteDescription(description);
+                    log(`RTC connection established with watcher: ${watcherId}`, 'success');
+                } catch (err) {
+                    log(`Failed to set remote answer: ${err.message}`, 'error');
+                }
+            }
+        });
+
+        socket.on('candidate', (watcherId, candidate) => {
+            const pc = peerConnections.get(watcherId);
+            if (pc) {
+                pc.addIceCandidate(new RTCIceCandidate(candidate))
+                    .catch(err => log(`Failed to add ICE candidate: ${err.message}`, 'error'));
+            }
+        });
+
+        socket.on('disconnectPeer', (watcherId) => {
+            log(`Watcher disconnected: ${watcherId}`, 'warning');
+            const pc = peerConnections.get(watcherId);
+            if (pc) {
+                pc.close();
+                peerConnections.delete(watcherId);
+                removeViewerFromUI(watcherId);
+            }
+        });
+
+        // UI helper functions for viewer list
+        function addViewerToUI(watcherId) {
+            noViewersText.style.display = 'none';
+            const li = document.createElement('li');
+            li.id = `viewer-${watcherId}`;
+            li.className = 'viewer-item';
+            li.innerHTML = `
+                <span>Viewer ID: ${watcherId.slice(0, 8)}...</span>
+                <span class="viewer-dot"></span>
+            `;
+            viewerList.appendChild(li);
+        }
+
+        function removeViewerFromUI(watcherId) {
+            const li = document.getElementById(`viewer-${watcherId}`);
+            if (li) {
+                li.remove();
+            }
+            if (viewerList.children.length <= 1) { // only noViewersText is left
+                noViewersText.style.display = 'block';
+            }
+        }
+
+        // Automatic transition logic
+        let isTransitioning = false;
+        async function transitionToQuestion(newQuestionId) {
+            if (isTransitioning || !isBroadcasting) return;
+            isTransitioning = true;
+
+            const oldQuestionId = questionIdInput.value.trim();
+            log(`Auto-transitioning from question ${oldQuestionId} to ${newQuestionId}...`);
+
+            if (isRecordingQuestion) {
+                // Stop previous recording
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    log(`Stopped recording for Question: "${oldQuestionId}". Saving in background...`);
+                }
+                isRecordingQuestion = false;
+            }
+
+            // Select the new question
+            questionSelect.value = newQuestionId;
+            questionIdInput.value = newQuestionId;
+
+            // Wait briefly for MediaRecorder cleanup, then start next recording
+            setTimeout(() => {
+                startQuestionRecording(newQuestionId);
+                isTransitioning = false;
+            }, 600);
+        }
+
+        // Recording System
+        let uploadQueue = [];
+        let isUploading = false;
+        let currentUploadId = null;
+        let currentUploadIndex = 0;
+        let currentQuestionId = null;
+
+        async function processUploadQueue() {
+            if (isUploading || uploadQueue.length === 0) return;
+            isUploading = true;
+
+            const { chunk, isLast, questionId, uploadId, index } = uploadQueue.shift();
+
+            const username = usernameInput.value.trim() || 'user';
+            const quizId = quizIdInput.value.trim() || 'default-quiz';
+
+            const formData = new FormData();
+            formData.append('recording', chunk, `recording-${username}-${quizId}-${questionId}.webm`);
+            formData.append('uploadId', uploadId);
+            formData.append('index', index);
+            formData.append('isLast', isLast);
+            formData.append('username', username);
+            formData.append('quizId', quizId);
+            formData.append('questionId', questionId);
+
+            try {
+                const res = await fetch(`${BASE_URL}/api/recordings/screen/chunk`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Upload failed for chunk ${index}`);
+                }
+
+                if (isLast) {
+                    const data = await res.json();
+                    log(`Upload for Q: "${questionId}" complete! Job ID: ${data.jobId}. File WebM URL: ${data.fileUrl}`, 'success');
+                    pollConversionStatus(data.jobId, questionId);
+                }
+            } catch (err) {
+                log(`Upload failed: ${err.message}`, 'error');
+            } finally {
+                isUploading = false;
+                processUploadQueue();
+            }
+        }
+
+        function startQuestionRecording(questionId) {
+            const hasAudio = localStream && localStream.getAudioTracks().length > 0;
+            let options = {};
+
+            if (hasAudio) {
+                if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+                    options = { mimeType: 'video/webm;codecs=vp9,opus' };
+                } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+                    options = { mimeType: 'video/webm;codecs=vp8,opus' };
+                } else {
+                    options = { mimeType: 'video/webm' };
+                }
+            } else {
+                if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+                    options = { mimeType: 'video/webm;codecs=vp9' };
+                } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+                    options = { mimeType: 'video/webm;codecs=vp8' };
+                } else {
+                    options = { mimeType: 'video/webm' };
+                }
+            }
+
+            try {
+                currentUploadId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+                currentUploadIndex = 0;
+                currentQuestionId = questionId;
+
+                conversionContainer.style.display = 'flex';
+                uploadStatusText.textContent = `Streaming Q: ${questionId}...`;
+                uploadPercent.textContent = 'Live';
+                progressBar.style.width = '100%';
+
+                mediaRecorder = new MediaRecorder(localStream, options);
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        uploadQueue.push({
+                            chunk: e.data,
+                            isLast: false,
+                            questionId: currentQuestionId,
+                            uploadId: currentUploadId,
+                            index: currentUploadIndex++
+                        });
+                        processUploadQueue();
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    log(`MediaRecorder stopped for Question: "${questionId}". Finalizing stream...`);
+                    uploadQueue.push({
+                        chunk: new Blob([]),
+                        isLast: true,
+                        questionId: currentQuestionId,
+                        uploadId: currentUploadId,
+                        index: currentUploadIndex++
+                    });
+                    processUploadQueue();
+                };
+
+                mediaRecorder.onerror = e => {
+                    log(`MediaRecorder error: ${e.error ? e.error.message : e.message || 'unknown error'}`, 'error');
+                };
+
+                mediaRecorder.start(1000); // chunk every 1 second
+
+                isRecordingQuestion = true;
+                questionIdInput.disabled = true;
+
+                recordingIndicator.style.display = 'flex';
+                const selectedText = questionSelect.options[questionSelect.selectedIndex]?.text || questionId;
+                activeRecordingText.textContent = selectedText;
+
+                log(`Started streaming recording for Question: "${questionId}". Options: ${options.mimeType}`);
+            } catch (err) {
+                log(`Failed to start recording: ${err.message}`, 'error');
+            }
+        }
+
+        // Next Question Navigation Click
+        nextQuestionBtn.addEventListener('click', () => {
+            if (quizSelect.value === 'custom') {
+                alert('Transitions are automatic for predefined quiz questions. For custom mode, please change the Custom Question ID manually.');
+                return;
+            }
+
+            const currentIndex = questionSelect.selectedIndex;
+            if (currentIndex < questionSelect.options.length - 1) {
+                const nextOption = questionSelect.options[currentIndex + 1];
+                transitionToQuestion(nextOption.value);
+            } else {
+                alert('You have reached the last question of this quiz. Click "End Quiz & Stop Share" to complete the test.');
+            }
+        });
+
+        // Intercept manual dropdown updates
+        questionSelect.addEventListener('change', () => {
+            if (quizSelect.value !== 'custom') {
+                transitionToQuestion(questionSelect.value);
+            } else {
+                questionIdInput.value = questionSelect.value;
+            }
+        });
+
+        // Legacy chunked upload function removed in favor of real-time streaming
+
+        // Poll conversion status
+        async function pollConversionStatus(jobId, questionId) {
+            uploadStatusText.textContent = `Transcoding Q: ${questionId} to MP4...`;
+            progressBar.style.width = '0%';
+            uploadPercent.textContent = '0%';
+
+            const interval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${BASE_URL}/api/conversion-status/${jobId}`);
+                    if (!res.ok) {
+                        clearInterval(interval);
+                        throw new Error('Failed to fetch conversion status');
+                    }
+                    const data = await res.json();
+
+                    if (data.status === 'processing') {
+                        uploadPercent.textContent = `${data.progress}%`;
+                        progressBar.style.width = `${data.progress}%`;
+                    } else if (data.status === 'done') {
+                        clearInterval(interval);
+                        uploadPercent.textContent = '100%';
+                        progressBar.style.width = '100%';
+                        uploadStatusText.textContent = `Q: ${questionId} Transcoding complete!`;
+                        log(`Transcoding done for Q: "${questionId}"! MP4 URL: ${data.mp4Url}`, 'success');
+
+                        // Emit to signaling server so active viewers get it
+                        socket.emit('recording-ready', { screenUrl: data.mp4Url });
+
+                        setTimeout(() => {
+                            conversionContainer.style.display = 'none';
+                        }, 5000);
+                    } else if (data.status === 'failed') {
+                        clearInterval(interval);
+                        log(`Transcoding failed for Q: "${questionId}": ${data.error}`, 'error');
+                        uploadStatusText.textContent = 'Transcoding failed';
+                    }
+                } catch (err) {
+                    clearInterval(interval);
+                    log(`Polling failed: ${err.message}`, 'error');
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

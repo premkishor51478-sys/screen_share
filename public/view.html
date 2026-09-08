@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Screen Viewer</title>
+    <style>
+        .video-wrap { position: relative; max-width: 960px; }
+        #remoteVideo { width: 100%; height: auto; background: #000; }
+        #info { display: none; }
+    </style>
+</head>
+
+<body>
+    <p id="info">Connecting...</p>
+    <p id="recordingInfo"></p>
+    <div class="video-wrap">
+        <video id="remoteVideo" autoplay playsinline muted controls></video>
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/viewer.js"></script>
+</body>
+
+</html>
